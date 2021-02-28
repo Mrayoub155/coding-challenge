@@ -1845,15 +1845,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-//
-//
-//
 //
 //
 //
@@ -1945,25 +1936,66 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     return {
       sortByName: false,
       sortByPrice: false,
-      Selection: {}
+      products: [],
+      categories: [],
+      selectedCategory: -1
     };
   },
   watch: {
     sortByName: function sortByName() {
-      this.Selection = _objectSpread(_objectSpread({}, this.Selection), {}, {
-        name: this.sortByName
-      });
+      this.filter();
     },
     sortByPrice: function sortByPrice() {
-      this.Selection = _objectSpread(_objectSpread({}, this.Selection), {}, {
-        price: this.sortByPrice
-      });
+      this.filter();
+    },
+    selectedCategory: function selectedCategory() {
+      this.selectedCategory == -1 ? this.loadData('/products/get') : this.getCategoryProducts("/categories/get", this.selectedCategory);
     }
   },
   methods: {
-    LoadValue: function LoadValue() {
-      alert(this.sortByName);
+    filter: function filter() {
+      this.loadData("/products/filtred/?byname=".concat(this.sortByName, "&byprice=").concat(this.sortByPrice));
+    },
+    loadData: function loadData(url) {
+      var _this = this;
+
+      fetch(url).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        _this.products = data;
+      })["catch"](function (err) {
+        return console.log(err);
+      });
+    },
+    getCategoriesData: function getCategoriesData(url) {
+      var _this2 = this;
+
+      fetch(url).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        _this2.categories = data;
+      })["catch"](function (err) {
+        return console.log(err);
+      });
+    },
+    getCategoryProducts: function getCategoryProducts(url, id) {
+      var _this3 = this;
+
+      fetch(url + "/".concat(id)).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        _this3.products = data;
+      })["catch"](function (err) {
+        return console.log(err);
+      });
     }
+  },
+  created: function created() {
+    this.loadData("/products/get");
+    this.getCategoriesData("/categories/get");
+  },
+  props: {
+    token: String
   }
 });
 
@@ -19960,9 +19992,40 @@ var render = function() {
       _c("div", { staticClass: "row text-white mb-5" }, [
         _vm._m(0),
         _vm._v(" "),
-        _vm._m(1),
+        _c("div", { staticClass: "col-lg-7 mx-auto" }, [
+          _c(
+            "form",
+            {
+              attrs: {
+                action: "/product/create",
+                method: "post",
+                enctype: "multipart/form-data"
+              }
+            },
+            [
+              _c("input", {
+                attrs: { type: "hidden", name: "_token" },
+                domProps: { value: _vm.token }
+              }),
+              _vm._v(" "),
+              _vm._m(1),
+              _vm._v(" "),
+              _vm._m(2),
+              _vm._v(" "),
+              _vm._m(3),
+              _vm._v(" "),
+              _vm._m(4),
+              _vm._v(" "),
+              _c(
+                "button",
+                { staticClass: "btn btn-primary", attrs: { type: "submit" } },
+                [_vm._v("Add")]
+              )
+            ]
+          )
+        ]),
         _vm._v(" "),
-        _vm._m(2),
+        _vm._m(5),
         _vm._v(" "),
         _c("div", { staticClass: "col-lg-7 mx-auto" }, [
           _c("div", { staticClass: "sortList" }, [
@@ -20079,11 +20142,111 @@ var render = function() {
             ])
           ]),
           _vm._v(" "),
-          _vm._m(3)
+          _c("div", { staticClass: "sortList" }, [
+            _c("span", [_vm._v("Filter By Categories")]),
+            _vm._v(" "),
+            _c(
+              "select",
+              {
+                on: {
+                  change: function($event) {
+                    _vm.selectedCategory = $event.target.value
+                  }
+                }
+              },
+              [
+                _c("option", { attrs: { value: "-1" } }, [
+                  _vm._v(" --- select ---- ")
+                ]),
+                _vm._v(" "),
+                _vm._l(_vm.categories, function(category) {
+                  return _c(
+                    "option",
+                    { key: category.id, domProps: { value: category.id } },
+                    [
+                      _vm._v(
+                        "\n                          " +
+                          _vm._s(category.name) +
+                          "\n                      "
+                      )
+                    ]
+                  )
+                })
+              ],
+              2
+            )
+          ])
         ])
       ]),
       _vm._v(" "),
-      _vm._m(4)
+      _c("div", { staticClass: "row" }, [
+        _c("div", { staticClass: "col-lg-8 mx-auto" }, [
+          _c(
+            "ul",
+            { staticClass: "list-group shadow" },
+            _vm._l(_vm.products, function(product) {
+              return _c(
+                "li",
+                { key: product.id, staticClass: "list-group-item" },
+                [
+                  _c(
+                    "div",
+                    {
+                      staticClass:
+                        "media align-items-lg-center flex-column flex-lg-row p-3"
+                    },
+                    [
+                      _c(
+                        "div",
+                        { staticClass: "media-body order-2 order-lg-1" },
+                        [
+                          _c(
+                            "h5",
+                            { staticClass: "mt-0 font-weight-bold mb-2" },
+                            [_vm._v(_vm._s(product.name))]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "p",
+                            {
+                              staticClass: "font-italic text-muted mb-0 small"
+                            },
+                            [_vm._v(_vm._s(product.description))]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "div",
+                            {
+                              staticClass:
+                                "d-flex align-items-center justify-content-between mt-1"
+                            },
+                            [
+                              _c(
+                                "h6",
+                                { staticClass: "font-weight-bold my-2" },
+                                [_vm._v("$" + _vm._s(product.price))]
+                              )
+                            ]
+                          )
+                        ]
+                      ),
+                      _c("img", {
+                        staticClass: "ml-lg-5 order-1 order-lg-2",
+                        attrs: {
+                          src: "storage/" + product.image,
+                          alt: "Generic placeholder image",
+                          width: "200"
+                        }
+                      })
+                    ]
+                  )
+                ]
+              )
+            }),
+            0
+          )
+        ])
+      ])
     ])
   ])
 }
@@ -20093,65 +20256,67 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-lg-7 mx-auto" }, [
-      _c("h1", { staticClass: "display-9" }, [_vm._v("Add new Product")])
+      _c("h1", { staticClass: "display-9" }, [_vm._v("Add new Product  ")])
     ])
   },
   function() {
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-lg-7 mx-auto" }, [
-      _c("form", [
-        _c("div", { staticClass: "form-group" }, [
-          _c("label", { attrs: { for: "exampleInputEmail1" } }, [
-            _vm._v("Name")
-          ]),
-          _vm._v(" "),
-          _c("input", {
-            staticClass: "form-control",
-            attrs: { type: "text", placeholder: "Name " }
-          })
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "form-group" }, [
-          _c("label", { attrs: { for: "exampleFormControlTextarea1" } }, [
-            _vm._v("Description")
-          ]),
-          _vm._v(" "),
-          _c("textarea", {
-            staticClass: "form-control",
-            attrs: { id: "exampleFormControlTextarea1", rows: "3" }
-          })
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "form-group" }, [
-          _c("label", { attrs: { for: "exampleInputEmail1" } }, [
-            _vm._v("Price")
-          ]),
-          _vm._v(" "),
-          _c("input", {
-            staticClass: "form-control",
-            attrs: { type: "text", placeholder: "Price" }
-          })
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "form-group" }, [
-          _c("label", { attrs: { for: "exampleFormControlFile1" } }, [
-            _vm._v("Image")
-          ]),
-          _vm._v(" "),
-          _c("input", {
-            staticClass: "form-control-file",
-            attrs: { type: "file" }
-          })
-        ]),
-        _vm._v(" "),
-        _c(
-          "button",
-          { staticClass: "btn btn-primary", attrs: { type: "submit" } },
-          [_vm._v("Add")]
-        )
-      ])
+    return _c("div", { staticClass: "form-group" }, [
+      _c("label", { attrs: { for: "exampleInputEmail1" } }, [_vm._v("Name")]),
+      _vm._v(" "),
+      _c("input", {
+        staticClass: "form-control",
+        attrs: { type: "text", name: "name", placeholder: "Name " }
+      })
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "form-group" }, [
+      _c("label", { attrs: { for: "exampleFormControlTextarea1" } }, [
+        _vm._v("Description")
+      ]),
+      _vm._v(" "),
+      _c("textarea", {
+        staticClass: "form-control",
+        attrs: {
+          name: "description",
+          id: "exampleFormControlTextarea1",
+          rows: "3"
+        }
+      })
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "form-group" }, [
+      _c("label", { attrs: { for: "exampleInputEmail1" } }, [_vm._v("Price")]),
+      _vm._v(" "),
+      _c("input", {
+        staticClass: "form-control",
+        attrs: { type: "text", name: "price", placeholder: "Price" }
+      })
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "form-group" }, [
+      _c("label", { attrs: { for: "exampleFormControlFile1" } }, [
+        _vm._v("Image")
+      ]),
+      _vm._v(" "),
+      _c("input", {
+        staticClass: "form-control-file",
+        attrs: { type: "file", name: "image" }
+      })
     ])
   },
   function() {
@@ -20160,102 +20325,6 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "col-lg-7 mx-auto" }, [
       _c("h1", { staticClass: "display-9 mt-5" }, [_vm._v("Product List")])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "sortList" }, [
-      _c("span", [_vm._v("Filter By Categories")]),
-      _vm._v(" "),
-      _c("select", [
-        _c("option", [_vm._v("a")]),
-        _vm._v(" "),
-        _c("option", [_vm._v("b")]),
-        _vm._v(" "),
-        _c("option", [_vm._v("c")])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-lg-8 mx-auto" }, [
-        _c("ul", { staticClass: "list-group shadow" }, [
-          _c("li", { staticClass: "list-group-item" }, [
-            _c(
-              "div",
-              {
-                staticClass:
-                  "media align-items-lg-center flex-column flex-lg-row p-3"
-              },
-              [
-                _c("div", { staticClass: "media-body order-2 order-lg-1" }, [
-                  _c("h5", { staticClass: "mt-0 font-weight-bold mb-2" }, [
-                    _vm._v("Apple iPhone XR (Red, 128 GB)")
-                  ]),
-                  _vm._v(" "),
-                  _c(
-                    "p",
-                    { staticClass: "font-italic text-muted mb-0 small" },
-                    [
-                      _vm._v(
-                        "128 GB ROM | 15.49 cm (6.1 inch) Display 12MP Rear Camera | 7MP Front Camera A12 Bionic Chip Processor"
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "div",
-                    {
-                      staticClass:
-                        "d-flex align-items-center justify-content-between mt-1"
-                    },
-                    [
-                      _c("h6", { staticClass: "font-weight-bold my-2" }, [
-                        _vm._v("₹64,999")
-                      ]),
-                      _vm._v(" "),
-                      _c("ul", { staticClass: "list-inline small" }, [
-                        _c("li", { staticClass: "list-inline-item m-0" }, [
-                          _c("i", { staticClass: "fa fa-star text-success" })
-                        ]),
-                        _vm._v(" "),
-                        _c("li", { staticClass: "list-inline-item m-0" }, [
-                          _c("i", { staticClass: "fa fa-star text-success" })
-                        ]),
-                        _vm._v(" "),
-                        _c("li", { staticClass: "list-inline-item m-0" }, [
-                          _c("i", { staticClass: "fa fa-star text-success" })
-                        ]),
-                        _vm._v(" "),
-                        _c("li", { staticClass: "list-inline-item m-0" }, [
-                          _c("i", { staticClass: "fa fa-star text-success" })
-                        ]),
-                        _vm._v(" "),
-                        _c("li", { staticClass: "list-inline-item m-0" }, [
-                          _c("i", { staticClass: "fa fa-star-o text-gray" })
-                        ])
-                      ])
-                    ]
-                  )
-                ]),
-                _c("img", {
-                  staticClass: "ml-lg-5 order-1 order-lg-2",
-                  attrs: {
-                    src: "https://i.imgur.com/KFojDGa.jpg",
-                    alt: "Generic placeholder image",
-                    width: "200"
-                  }
-                })
-              ]
-            )
-          ])
-        ])
-      ])
     ])
   }
 ]
